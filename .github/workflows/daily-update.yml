@@ -2,7 +2,7 @@ name: Daily Dashboard Update
 
 on:
   schedule:
-    # 每天美股收盘后（UTC 21:30）自动运行
+    # 每个工作日美股收盘后（UTC 21:30 = 北京时间次日 05:30）自动运行
     - cron: '30 21 * * 1-5'
   workflow_dispatch:   # 允许手动随时点击一键触发
 
@@ -18,16 +18,19 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Install dependencies
+      - name: Install Python dependencies
         run: pip install yfinance pandas
 
       - name: Generate dashboard with cross-validated data
         run: python generate_dashboard.py
 
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
       - name: Deploy to Vercel
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: 'team_LOL4T4MP44lKf9dRdDGCZtR7'
-          vercel-project-id: 'prj_1cC0vY4BLDpSZNJZd0hD9S3g5Epa'
-          vercel-args: '--prod'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: 'team_LOL4T4MP44lKf9dRdDGCZtR7'
+          VERCEL_PROJECT_ID: 'prj_1cC0vY4BLDpSZNJZd0hD9S3g5Epa'
+        run: |
+          vercel deploy --prod --yes --token=$VERCEL_TOKEN
